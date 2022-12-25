@@ -1,0 +1,47 @@
+import cv2
+import numpy as np
+
+
+Reflen=int(input("Enter known length: "))
+
+# Load the video capture
+cap = cv2.VideoCapture(0)
+
+
+while True:
+    # Capture a frame from the video feed
+    ret, frame = cap.read()
+
+    # Convert the frame to HSV color space
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+    # Define the lower and upper boundaries of the red color in the HSV color space
+    lower_red = (0, 50, 50)
+    upper_red = (10, 255, 255)
+
+    # Create a mask for the red color
+    mask = cv2.inRange(hsv, lower_red, upper_red)
+
+    # Find contours in the mask
+    contours , _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+    
+
+    # Find the length of the reference edge (in pixels)
+    reference_edge_length, _ = cv2.minAreaRect(contours)[1]
+
+    # Calculate the length of the other edge (in pixels)
+    other_edge_length = (Reflen) * (reference_edge_length/Reflen)
+
+    # Display the frame with the contours and other edge length on the screen
+    cv2.drawContours(frame, [contours], -1, (0, 255, 0), 2)
+    cv2.putText(frame, f"Other edge length: {other_edge_length:.2f} pixels", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+    cv2.imshow("Frame", frame)
+
+    # Break the loop if the user presses the "q" key
+    if cv2.waitKey(1) & 0xFF == ord("q"):
+        break
+
+# Release the video capture and destroy all windows
+cap.release()
+cv2.destroyAllWindows()
